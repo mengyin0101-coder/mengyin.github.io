@@ -34,6 +34,7 @@ a {
 
 img {
   max-width: 100%;
+  height: auto;
 }
 
 .lang-zh-only {
@@ -390,7 +391,7 @@ p {
 }
 
 .focus-grid article,
-.snapshot-grid article,
+.snapshot-grid > *,
 .case-grid section {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -398,8 +399,8 @@ p {
   background: var(--panel);
 }
 
-.focus-grid span,
-.snapshot-grid span,
+.focus-grid article > span,
+.snapshot-grid > .snapshot-card > span,
 .project-meta,
 .case-index small {
   color: var(--muted);
@@ -433,8 +434,9 @@ p {
 }
 
 .project-featured h3 {
-  font-size: 32px;
-  line-height: 1.08;
+  font-size: clamp(26px, 2.35vw, 31px);
+  line-height: 1.12;
+  text-wrap: balance;
 }
 
 .focus-grid h3 {
@@ -473,9 +475,14 @@ p {
 .project-card h3,
 .snapshot-grid h3 {
   margin-bottom: 0;
+  text-wrap: balance;
 }
 
 .snapshot-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 22px;
+  background: var(--panel);
   display: grid;
   align-content: start;
   gap: 10px;
@@ -487,8 +494,18 @@ p {
   transform: translateY(-3px);
 }
 
+.snapshot-card:focus-visible,
+.snapshot-list-card:focus-visible {
+  outline: 3px solid rgba(201, 236, 56, 0.7);
+  outline-offset: 3px;
+}
+
 .snapshot-card p {
   margin-bottom: 0;
+}
+
+.snapshot-card h3 {
+  min-height: 50px;
 }
 
 .snapshot-visual {
@@ -511,6 +528,8 @@ p {
 }
 
 .snapshot-list-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -538,6 +557,9 @@ p {
 }
 
 .snapshot-list-content {
+  display: grid;
+  grid-template-rows: auto minmax(52px, auto) auto;
+  flex: 1;
   padding: 16px 18px 18px;
 }
 
@@ -551,7 +573,11 @@ p {
   transform: scale(1.035);
 }
 
-.snapshot-list span {
+.supporting-link {
+  margin-top: 28px;
+}
+
+.snapshot-list-content > span {
   color: var(--muted);
   font-size: 11px;
   font-weight: 850;
@@ -561,7 +587,9 @@ p {
 
 .snapshot-list h3 {
   margin: 7px 0 5px;
-  font-size: 22px;
+  font-size: 20px;
+  line-height: 1.14;
+  text-wrap: balance;
 }
 
 .snapshot-list p {
@@ -592,6 +620,22 @@ p {
   height: 100%;
   object-fit: cover;
   object-position: center 38%;
+}
+
+.supporting-divider {
+  margin: 44px 0 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.supporting-divider .eyebrow {
+  margin-bottom: 8px;
+}
+
+.supporting-divider > p:last-child {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: var(--muted);
 }
 
 .about-summary p {
@@ -769,13 +813,15 @@ p {
 
 .case-hero h1 {
   max-width: 980px;
-  font-size: 58px;
-  line-height: 1.03;
+  font-size: clamp(44px, 4.3vw, 54px);
+  line-height: 1.06;
+  text-wrap: balance;
 }
 
 .case-hero-copy {
   max-width: 760px;
-  font-size: 22px;
+  font-size: 19px;
+  line-height: 1.52;
 }
 
 .case-index {
@@ -815,8 +861,8 @@ p {
 .case-index strong {
   overflow: hidden;
   color: var(--green);
-  font-size: 19px;
-  line-height: 1.1;
+  font-size: 17px;
+  line-height: 1.16;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -841,8 +887,8 @@ p {
 
 .case-header h2 {
   margin-bottom: 14px;
-  font-size: 40px;
-  line-height: 1.08;
+  font-size: clamp(30px, 3.1vw, 37px);
+  line-height: 1.12;
   text-wrap: balance;
 }
 
@@ -855,15 +901,6 @@ p {
   margin: 0;
   padding-left: 20px;
   color: var(--muted);
-}
-
-body.is-zh .case-grid h3[data-zh] {
-  font-size: 0;
-}
-
-body.is-zh .case-grid h3[data-zh]::after {
-  content: attr(data-zh);
-  font-size: 24px;
 }
 
 .case-evidence {
@@ -1522,13 +1559,205 @@ body.is-zh .case-grid h3[data-zh]::after {
   color: var(--muted);
 }
 
+/* Supporting-project detail pages use the same restrained editorial system as the core cases. */
+.snapshot-hero {
+  padding-bottom: 48px;
+}
+
+.snapshot-hero h1 {
+  max-width: 980px;
+  font-size: clamp(44px, 5vw, 68px);
+  line-height: 1.02;
+}
+
+.snapshot-index {
+  position: sticky;
+  top: 76px;
+  z-index: 8;
+  display: flex;
+  gap: 8px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 12px clamp(18px, 4vw, 48px);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(12px);
+  scrollbar-width: none;
+}
+
+.snapshot-index::-webkit-scrollbar {
+  display: none;
+}
+
+.snapshot-index a {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.snapshot-index a:hover,
+.snapshot-index a:focus-visible,
+.snapshot-index a.is-current {
+  border-color: var(--green);
+  background: var(--green);
+  color: white;
+  outline: none;
+}
+
+.snapshot-study {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.74fr) minmax(0, 1.26fr);
+  gap: 26px 42px;
+  scroll-margin-top: 132px;
+}
+
+.snapshot-study-header {
+  align-self: center;
+}
+
+.snapshot-study--extended {
+  position: relative;
+}
+
+.snapshot-study--extended::before {
+  position: absolute;
+  top: 72px;
+  bottom: 72px;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--green);
+  content: "";
+}
+
+.snapshot-study--extended .snapshot-study-header {
+  padding-left: 18px;
+}
+
+.snapshot-tier {
+  margin: -3px 0 14px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 820;
+  line-height: 1.3;
+}
+
+.snapshot-study-header h2 {
+  margin-bottom: 14px;
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.snapshot-study-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: #101510;
+  box-shadow: var(--shadow);
+  object-fit: contain;
+}
+
+.snapshot-detail-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.snapshot-detail-grid section {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.snapshot-detail-grid h3 {
+  font-size: 19px;
+}
+
+.snapshot-detail-grid p {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+.snapshot-evidence {
+  grid-column: 1 / -1;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+}
+
+.snapshot-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.snapshot-evidence-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Original proposal pages remain uncropped and open in the shared lightbox. */
+.terrain-deck-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.terrain-deck-evidence h3 { font-size: 25px; margin-bottom: 12px; }
+.terrain-deck-evidence .terrain-deck-grid img { aspect-ratio: auto; height: auto; object-fit: contain; background: white; }
+.terrain-deck-evidence .terrain-deck-grid figcaption { padding: 18px 20px; font-size: 14px; line-height: 1.65; }
+.terrain-deck-note { margin: 20px 0 0; color: var(--muted); font-size: 12px; }
+@media (max-width: 760px) { .terrain-deck-grid { grid-template-columns: 1fr; } }
+
+.snapshot-evidence figure {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.snapshot-evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  cursor: zoom-in;
+  object-fit: contain;
+}
+
+.snapshot-evidence figcaption {
+  padding: 12px 14px 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 @media (max-width: 980px) {
-  .site-header,
+  .site-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px 24px;
+  }
+
+  .lang-switch {
+    justify-self: end;
+  }
+
+  .nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
   .hero,
   .positioning,
   .about-grid,
   .contact,
-  .case-study {
+  .case-study,
+  .snapshot-study {
     grid-template-columns: 1fr;
   }
 
@@ -1542,6 +1771,8 @@ body.is-zh .case-grid h3[data-zh]::after {
   .project-grid,
   .focus-grid,
   .snapshot-grid,
+  .snapshot-detail-grid,
+  .snapshot-evidence-grid,
   .case-index,
   .case-grid,
   .evidence-grid,
@@ -1620,12 +1851,49 @@ body.is-zh .case-grid h3[data-zh]::after {
   .case-next {
     grid-column: 1 / -1;
   }
+
+  .snapshot-study-cover {
+    grid-row: 1;
+  }
 }
 
 @media (max-width: 620px) {
   .section {
     padding-top: 54px;
     padding-bottom: 54px;
+  }
+
+  .site-header {
+    gap: 8px 12px;
+    min-height: 0;
+    padding: 8px 18px 7px;
+  }
+
+  .brand {
+    width: 34px;
+    height: 34px;
+    font-size: 11px;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 1px;
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lang-switch {
+    justify-self: end;
+    padding: 3px;
+  }
+
+  .lang-button {
+    padding: 6px 9px;
+    font-size: 11px;
   }
 
   .hero {
@@ -1683,7 +1951,8 @@ body.is-zh .case-grid h3[data-zh]::after {
   }
 
   .case-header h2 {
-    font-size: 36px;
+    font-size: 31px;
+    line-height: 1.12;
   }
 
   .case-next {
@@ -1697,7 +1966,19 @@ body.is-zh .case-grid h3[data-zh]::after {
   }
 
   .case-hero h1 {
-    font-size: 40px;
+    font-size: 36px;
+    line-height: 1.08;
+  }
+
+  .snapshot-hero {
+    padding-top: 44px;
+    padding-bottom: 42px;
+  }
+
+  .snapshot-hero h1 {
+    font-size: 36px;
+    line-height: 1.06;
+    text-wrap: balance;
   }
 
   .hoka-gallery {
@@ -1738,4 +2019,85 @@ body.is-zh .case-grid h3[data-zh]::after {
   .about-portrait {
     width: min(72vw, 280px);
   }
+
+  .snapshot-index {
+    top: 64px;
+    padding: 10px 18px;
+  }
+
+  .snapshot-index a {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .snapshot-study {
+    gap: 20px;
+    scroll-margin-top: 122px;
+  }
+
+  .snapshot-study-header h2 {
+    font-size: 30px;
+    line-height: 1.1;
+  }
+
+  .snapshot-study-cover {
+    border-radius: 6px;
+  }
+
+  .snapshot-detail-grid section {
+    padding: 18px;
+  }
+
+  .snapshot-evidence-grid,
+  .snapshot-evidence-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .snapshot-evidence img {
+    aspect-ratio: 4 / 3;
+  }
+
+}
+
+/* Chinese text needs room for full-height glyphs and natural punctuation wrapping. */
+body.is-zh {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  line-break: strict;
+  word-break: normal;
+}
+
+body.is-zh :is(h1, h2, h3, h4) {
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+body.is-zh :is(p, li, figcaption) {
+  line-height: 1.75;
+}
+
+body.is-zh .eyebrow {
+  letter-spacing: 0.06em;
+}
+
+body.is-zh .case-index strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+body.is-zh .snapshot-card h3 {
+  min-height: 2.7em;
+}
+
+/* Keep the project navigation below the actual header in either language. */
+.snapshot-index {
+  top: var(--site-header-height, 76px);
+}
+
+.case-study {
+  scroll-margin-top: calc(var(--site-header-height, 76px) + 24px);
+}
+
+.snapshot-study {
+  scroll-margin-top: calc(var(--site-header-height, 76px) + 76px);
 }
