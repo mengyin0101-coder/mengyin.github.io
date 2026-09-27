@@ -2101,3 +2101,30 @@ body.is-zh .snapshot-card h3 {
 .snapshot-study {
   scroll-margin-top: calc(var(--site-header-height, 76px) + 76px);
 }
+
+/* Compact Chinese hierarchy; mixed Latin brand names wrap at word boundaries. */
+body.is-zh :is(.project-card, .snapshot-card, .snapshot-list-content, .case-header, .snapshot-study-header) {
+  min-width: 0;
+}
+body.is-zh :is(h1, h2, h3, h4) {
+  text-wrap: wrap;
+  overflow-wrap: break-word;
+  letter-spacing: 0;
+}
+body.is-zh .section-heading h2 { font-size: clamp(28px, 3.2vw, 40px); }
+body.is-zh :is(.project-card, .snapshot-card) h3 { font-size: 24px; line-height: 1.45; }
+body.is-zh .snapshot-list h3 { font-size: 20px; line-height: 1.45; }
+body.is-zh .case-index strong { overflow-wrap: normal; }
+body.is-zh :is(.case-header, .snapshot-study-header) h2 { font-size: clamp(26px, 3vw, 34px); line-height: 1.45; }
+@media (max-width: 620px) {
+  body.is-zh h1 { font-size: 44px; }
+  body.is-zh :is(.case-hero, .snapshot-hero) h1 { font-size: 30px; }
+  body.is-zh .hero h2 { font-size: 22px; line-height: 1.5; }
+  body.is-zh .section-heading h2 { font-size: 28px; line-height: 1.45; }
+  body.is-zh :is(.project-card, .snapshot-card) h3 { font-size: 22px; }
+  body.is-zh :is(.focus-grid, .timeline, .case-grid, .snapshot-detail-grid) h3 { font-size: 20px; line-height: 1.5; }
+  body.is-zh :is(.evidence-heading, .terrain-deck-evidence) h3 { font-size: 24px; line-height: 1.5; }
+  body.is-zh :is(.hero-intro, .about-summary p) { font-size: 17px; }
+  body.is-zh .contact h2 { font-size: 26px; line-height: 1.55; }
+  body.is-zh .nav { font-size: 12px; line-height: 1.4; }
+}
