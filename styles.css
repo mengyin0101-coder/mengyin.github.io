@@ -2237,3 +2237,49 @@ body.lightbox-open { overflow: hidden; }
 }
 .image-lightbox img { touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-drag: none; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Six-image project galleries: four paired previews followed by two full-width pages. */
+.project-gallery:is(.evidence-grid, .hoka-gallery, .snapshot-evidence-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 20px;
+  align-items: stretch;
+}
+.project-gallery > figure {
+  min-width: 0;
+  margin: 0;
+  grid-column: auto;
+  grid-row: auto;
+}
+.project-gallery > figure.gallery-wide { grid-column: 1 / -1; }
+.project-gallery > figure > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--panel);
+}
+/* Keep the full portrait photographs visible in equal-height frames. */
+.hoka-gallery.project-gallery > figure:not(.gallery-wide) > img {
+  aspect-ratio: 4 / 3;
+}
+.project-gallery > figure > figcaption,
+.terrain-deck-evidence .project-gallery > figure > figcaption {
+  font-size: 13px;
+  line-height: 1.55;
+}
+.snapshot-evidence .project-gallery > figure > figcaption {
+  padding: 12px 14px 14px;
+}
+@media (max-width: 760px) {
+  .project-gallery:is(.evidence-grid, .hoka-gallery, .snapshot-evidence-grid) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .project-gallery > figure.gallery-wide { grid-column: auto; }
+  .hoka-gallery.project-gallery > figure:not(.gallery-wide) > img {
+    aspect-ratio: auto;
+  }
+}
