@@ -17,7 +17,7 @@
     <meta name="twitter:title" content="Project Snapshots | Mengyin Li">
     <meta name="twitter:description" content="Selected sports, outdoor and lifestyle marketing projects, from brand campaigns to destination activation.">
     <meta name="twitter:image" content="https://mengyin0101-coder.github.io/assets/covers/zhoushan-1390-brand-renewal.webp?v=zhoushan-cover-2">
-    <link rel="stylesheet" href="styles.css?v=portfolio11">
+    <link rel="stylesheet" href="styles.css?v=portfolio13">
   </head>
   <body>
     <header class="site-header">
@@ -107,8 +107,17 @@
       </article>
     </main>
 
-    <dialog class="image-lightbox" id="image-lightbox" aria-label="Expanded project visual"><button class="lightbox-close" type="button" aria-label="Close image">×</button><img src="" alt=""><p></p></dialog>
+    <dialog class="image-lightbox" id="image-lightbox" aria-label="Expanded project visual" data-aria-en="Expanded project visual" data-aria-zh="项目图片预览">
+      <button class="lightbox-close" type="button" aria-label="Close image" data-aria-en="Close image" data-aria-zh="关闭图片">×</button>
+      <img src="" alt="" aria-describedby="lightbox-caption">
+      <div class="lightbox-navigation">
+        <button class="lightbox-prev" type="button"><span aria-hidden="true">←</span> <span class="lang-en-only">Previous</span><span class="lang-zh-only">上一张</span></button>
+        <span class="lightbox-count" role="status" aria-live="polite" aria-atomic="true"></span>
+        <button class="lightbox-next" type="button"><span class="lang-en-only">Next</span><span class="lang-zh-only">下一张</span> <span aria-hidden="true">→</span></button>
+      </div>
+      <p id="lightbox-caption"></p>
+    </dialog>
     <footer class="site-footer"><p>© <span id="year"></span> Mengyin Li · Eva Li</p><a href="index.html#projects"><span class="lang-en-only">Back to portfolio</span><span class="lang-zh-only">返回作品集</span></a></footer>
-    <script src="script.js?v=portfolio6"></script>
+    <script src="script.js?v=portfolio13"></script>
   </body>
 </html>

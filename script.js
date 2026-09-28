@@ -22,6 +22,9 @@ function setLanguage(language) {
   buttons.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.lang === language);
   });
+  document.querySelectorAll("[data-aria-en]").forEach((element) => {
+    element.setAttribute("aria-label", element.dataset[language === "zh" ? "ariaZh" : "ariaEn"]);
+  });
   const pageMeta = localizedPageMeta[pageKey]?.[language];
   if (pageMeta) {
     document.title = pageMeta.title;
@@ -45,25 +48,49 @@ const lightbox = document.querySelector("#image-lightbox");
 
 if (lightbox) {
   const lightboxImage = lightbox.querySelector("img");
-  const lightboxCaption = lightbox.querySelector("p");
+  const lightboxCaption = lightbox.querySelector("#lightbox-caption");
   const closeButton = lightbox.querySelector(".lightbox-close");
-  const evidenceImages = document.querySelectorAll(".evidence-grid img, .hoka-gallery img, .snapshot-evidence img");
+  const previousButton = lightbox.querySelector(".lightbox-prev");
+  const nextButton = lightbox.querySelector(".lightbox-next");
+  const counter = lightbox.querySelector(".lightbox-count");
+  const selector = ".evidence-grid img, .hoka-gallery img, .snapshot-evidence img";
+  const evidenceImages = [...document.querySelectorAll(selector)];
+  let gallery = [];
+  let currentIndex = 0;
+  let opener = null;
+
+  function renderImage() {
+    const image = gallery[currentIndex];
+    const figure = image.closest("figure");
+    const language = document.body.classList.contains("is-zh") ? "zh" : "en";
+    const caption = figure?.querySelector(`figcaption.lang-${language}-only`);
+    lightboxImage.src = image.currentSrc || image.src;
+    lightboxImage.alt = image.alt;
+    lightboxCaption.textContent = caption?.textContent || image.alt;
+    counter.textContent = `${currentIndex + 1} / ${gallery.length}`;
+    previousButton.disabled = nextButton.disabled = gallery.length < 2;
+  }
+
+  function moveImage(direction) {
+    currentIndex = (currentIndex + direction + gallery.length) % gallery.length;
+    renderImage();
+  }
 
   function openLightbox(image) {
-    const figure = image.closest("figure");
-    const preferredCaption = document.body.classList.contains("is-zh")
-      ? figure?.querySelector("figcaption.lang-zh-only")
-      : figure?.querySelector("figcaption.lang-en-only");
-
-    lightboxImage.src = image.src;
-    lightboxImage.alt = image.alt;
-    lightboxCaption.textContent = preferredCaption?.textContent || image.alt;
+    opener = image;
+    const project = image.closest(".case-study, .snapshot-study");
+    gallery = project ? [...project.querySelectorAll(selector)] : [image];
+    currentIndex = gallery.indexOf(image);
+    renderImage();
     lightbox.showModal();
+    document.body.classList.add("lightbox-open");
+    closeButton.focus();
   }
 
   evidenceImages.forEach((image) => {
     image.tabIndex = 0;
     image.setAttribute("role", "button");
+    image.setAttribute("aria-haspopup", "dialog");
     image.addEventListener("click", () => openLightbox(image));
     image.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -73,9 +100,46 @@ if (lightbox) {
     });
   });
 
+  // Keep native pinch zoom and vertical scrolling; only clear, single-finger
+  // horizontal gestures on an unzoomed image change the page.
+  let swipeStart = null;
+  lightboxImage.addEventListener("touchstart", (event) => {
+    swipeStart = event.touches.length === 1 && (window.visualViewport?.scale || 1) <= 1.01
+      ? { x: event.touches[0].clientX, y: event.touches[0].clientY, time: performance.now() }
+      : null;
+  }, { passive: true });
+  lightboxImage.addEventListener("touchmove", (event) => {
+    if (event.touches.length !== 1 || (window.visualViewport?.scale || 1) > 1.01) swipeStart = null;
+  }, { passive: true });
+  lightboxImage.addEventListener("touchcancel", () => { swipeStart = null; }, { passive: true });
+  lightboxImage.addEventListener("touchend", (event) => {
+    const start = swipeStart;
+    swipeStart = null;
+    if (!start || event.touches.length || event.changedTouches.length !== 1) return;
+    const end = event.changedTouches[0];
+    const direction = imageSwipeDirection(end.clientX - start.x, end.clientY - start.y,
+      performance.now() - start.time, window.visualViewport?.scale || 1);
+    if (direction) moveImage(direction);
+  }, { passive: true });
+
+  previousButton.addEventListener("click", () => moveImage(-1));
+  nextButton.addEventListener("click", () => moveImage(1));
   closeButton.addEventListener("click", () => lightbox.close());
+  lightbox.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      moveImage(event.key === "ArrowLeft" ? -1 : 1);
+    }
+  });
+  lightbox.addEventListener("close", () => {
+    document.body.classList.remove("lightbox-open");
+    opener?.focus({ preventScroll: true });
+  });
   lightbox.addEventListener("click", (event) => {
-    if (event.target === lightbox) lightbox.close();
+    const bounds = lightbox.getBoundingClientRect();
+    if (event.target === lightbox && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) {
+      lightbox.close();
+    }
   });
 }
 
@@ -95,17 +159,38 @@ if (caseStudies.length && caseIndexLinks.length) {
   const hashCase = window.location.hash.slice(1);
   setCurrentCase(hashCase || caseStudies[0].id);
 
-  const caseObserver = new IntersectionObserver(
-    (entries) => {
-      const currentEntry = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (currentEntry) setCurrentCase(currentEntry.target.id);
-    },
-    { rootMargin: "-18% 0px -58% 0px", threshold: [0.1, 0.3, 0.55] },
-  );
+  let caseFrame = 0;
+  let lastActiveCase = null;
+  function updateCurrentCase() {
+    caseFrame = 0;
+    const header = document.querySelector(".site-header");
+    const index = document.querySelector(".case-index");
+    const isMobile = window.matchMedia("(max-width: 980px)").matches;
+    const top = (header?.getBoundingClientRect().height || 76) + (isMobile ? index.offsetHeight : 0) + 28;
+    let current = caseStudies[0];
+    for (const study of caseStudies) {
+      if (study.getBoundingClientRect().top <= top) current = study;
+    }
+    const changed = lastActiveCase !== current.id;
+    lastActiveCase = current.id;
+    setCurrentCase(current.id);
+    if (isMobile && changed) {
+      const link = index.querySelector('[aria-current="true"]');
+      const bounds = index.getBoundingClientRect();
+      const item = link?.getBoundingClientRect();
+      if (item && (item.left < bounds.left || item.right > bounds.right)) {
+        index.scrollTo({ left: index.scrollLeft + item.left - bounds.left - 12, behavior: "auto" });
+      }
+    }
+  }
+  function scheduleCaseUpdate() {
+    if (!caseFrame) caseFrame = requestAnimationFrame(updateCurrentCase);
+  }
+  window.addEventListener("scroll", scheduleCaseUpdate, { passive: true });
+  window.addEventListener("resize", scheduleCaseUpdate);
+  window.addEventListener("load", scheduleCaseUpdate);
+  scheduleCaseUpdate();
 
-  caseStudies.forEach((study) => caseObserver.observe(study));
 }
 
 const snapshotStudies = document.querySelectorAll(".snapshot-study");
@@ -145,4 +230,31 @@ if (siteHeader) {
   };
   new ResizeObserver(updateHeaderHeight).observe(siteHeader);
   updateHeaderHeight();
+}
+
+// A swipe is deliberate, mostly horizontal, quick and performed before zooming.
+function imageSwipeDirection(dx, dy, duration, scale) {
+  if (scale > 1.01 || duration > 800 || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6) return 0;
+  return dx < 0 ? 1 : -1;
+}
+
+// Match visual and keyboard reading order; preserve the desktop sequence.
+const homepageAbout = document.querySelector("#home > #about");
+const homepageProjects = document.querySelector("#home > #projects");
+if (homepageAbout && homepageProjects) {
+  const mobileLayout = window.matchMedia("(max-width: 980px)");
+  const orderHomepage = () => {
+    const first = mobileLayout.matches ? homepageProjects : homepageAbout;
+    const second = mobileLayout.matches ? homepageAbout : homepageProjects;
+    if (first.nextElementSibling !== second) second.before(first);
+  };
+  mobileLayout.addEventListener("change", orderHomepage);
+  orderHomepage();
+}
+
+const mobileCaseIndex = document.querySelector(".case-index");
+if (mobileCaseIndex) {
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty("--case-index-height", `${mobileCaseIndex.offsetHeight}px`);
+  }).observe(mobileCaseIndex);
 }
